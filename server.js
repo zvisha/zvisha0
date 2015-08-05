@@ -26,5 +26,6 @@ var port = process.env.PORT || 888;
 http.createServer(function(req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('callcount =  ' + storage.getItem('callcount'));
+    res.end(storage.getItem('batman'));
     storage.setItem('callcount',storage.getItem('callcount')+1);
 }).listen(port);
