@@ -38,7 +38,7 @@ http.createServer(function(req, res) {
 // will match request to the root
 
 console.time("xxx");
-var t = process.hrtime();
+
 tableSvc = azure.createTableService("zvishastore0",
                                         "RFsvglPDm/vFbHiG1hbXCrejCtob63EQM62b/PFinTWzWfaisjIVv8X9/7579ckhYCTCcM6Yd/T3LyZdyM4cDw==");
 tableSvc.createTableIfNotExists('mytable', function(error, result, response){
@@ -52,56 +52,81 @@ tableSvc.createTableIfNotExists('mytable', function(error, result, response){
     }
 });
 
-function makeFuncs() {
-    var zvisha=10;
-    function handle_add(req, res) {
-        console.time("dbsave");
-        var task = {
-            PartitionKey: {'_':'hometasks'},
-            RowKey: {'_': req.query.xxx},
-            description: {'_':'take out the trash'},
-            dueDate: {'_':new Date(2015, 6, 20), '$':'Edm.DateTime'}
-        };
 
-        tableSvc.insertEntity('mytable',task, function (error, result, response) {
-            if(!error){
-                // Entity inserted
-                res.send('Ok' + ++zvisha);
-                console.timeEnd("dbsave");
-                console.log("insertEntity Ok");
-                console.log(result);
-                console.log(response);
-            } else {
-                res.send('Nak ' + ++zvisha);
-                console.timeEnd("dbsave");
-                console.log("insertEntity NAK");
-                console.log(result);
-                console.log(response);
-            }
-        });
-    }
+var zvisha=10;
+function handle_add(req, res) {
+    console.time("dbsave");
+    var task = {
+        PartitionKey: {'_':'hometasks'},
+        RowKey: {'_': req.query.id},
+        description: {'_':'take out the trash'},
+        dueDate: {'_':new Date(2015, 6, 20), '$':'Edm.DateTime'}
+    };
 
-    function send_hi(req, res) {
-        res.send('Hello ' + ++zvisha);
-    }
-    return {f1: handle_add, f2: send_hi};
+    tableSvc.insertEntity('mytable',task, function (error, result, response) {
+        if(!error){
+            // Entity inserted
+            res.send('Ok' + ++zvisha);
+            console.timeEnd("dbsave");
+            console.log("insertEntity Ok");
+            console.log(result);
+            console.log(response);
+        } else {
+            res.send('Nak ' + ++zvisha);
+            console.timeEnd("dbsave");
+            console.log("insertEntity NAK");
+            console.log(result);
+            console.log(response);
+        }
+    });
+}
+
+function send_hi(req, res) {
+    res.send('Hello ' + ++zvisha);
 }
 
 
 // will match request to the root
-var x = makeFuncs();
-app.get('/add1', x.f1);
-app.get('/add2', x.f2);
+app.get('/hi', send_hi);
+app.get('/add', handle_add);
 
-app.get('/get', function(req, res) {
-    var r = "";
-    r += 'Starting<br/>';
-    tableSvc.retrieveEntity('mytable', 'hometasks', '1', function(error, result, response){
+
+// Gets string to append data
+function get_data(t1, req, res, r, loops) {
+    tableSvc.retrieveEntity('mytable', 'hometasks', req.query.id, function(error, result, response){
+        loops--;
+
         if(!error){
             r += JSON.stringify(result);
+        } else {
+            r += JSON.stringify("Nada :(");
         }
-        r += "<br/>Done";
-        res.send(r);
-    });
+        r += "<br/>Done, ";
+        var t2 = new Date();
 
+        if (loops == 0) {
+            r += (t2 - t1) + " msec"  + "<br/>";
+            res.send(r);
+            return;
+        } else {
+            get_data(t1, req, res, r, loops);
+        }
+
+    });
+}
+
+app.get('/get', function(req, res) {
+    var loops = 5;
+    var t1 = new Date();
+    var r = "";
+    r += 'Starting<br/>';
+    get_data(t1, req, res, r, loops);
+});
+
+app.get('/', function(req, res) {
+    var r = "";
+    r += '/add?id=??? to add<br/>';
+    r += '/get?id=??? to get<br/>';
+    r += '/hi to ping<br/>';
+    res.send(r);
 });
