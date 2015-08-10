@@ -39,8 +39,8 @@ http.createServer(function(req, res) {
 
 console.time("xxx");
 
-tableSvc = azure.createTableService("zvishastore0",
-                                        "RFsvglPDm/vFbHiG1hbXCrejCtob63EQM62b/PFinTWzWfaisjIVv8X9/7579ckhYCTCcM6Yd/T3LyZdyM4cDw==");
+tableSvc = azure.createTableService("zvishastore33",
+"Yuvtq+EEPVgH1OgSYOsAUdyyUgp5oalhOheCkUNHZ1p8Y99la+/UyozRqZlH1t/qZf6gquNsNUhvUul8zkXQQQ==");
 tableSvc.createTableIfNotExists('mytable', function(error, result, response){
     if(!error){
         // Table exists or created
